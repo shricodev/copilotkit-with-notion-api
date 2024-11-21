@@ -12,16 +12,16 @@ import {
 import Link from 'next/link'
 import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core'
 import { useState } from 'react'
-import { updateNotionDBRowTitle } from '@/lib/notion'
+import { updateNotionDBRowLink, updateNotionDBRowTitle } from '@/lib/notion'
 import { toast } from 'sonner'
-import { TFormattedRow } from '@/types/notion'
+import { TRowDetails } from '@/types/notion'
 
 interface NotionTableProps {
-  initialTableData: TFormattedRow[]
+  initialTableData: TRowDetails[]
 }
 
 export const NotionTable = ({ initialTableData }: NotionTableProps) => {
-  const [tableData, setTableData] = useState<TFormattedRow[]>(initialTableData)
+  const [tableData, setTableData] = useState<TRowDetails[]>(initialTableData)
 
   useCopilotReadable({
     description:
@@ -31,7 +31,8 @@ export const NotionTable = ({ initialTableData }: NotionTableProps) => {
 
   useCopilotAction({
     name: 'updateRowName',
-    description: 'Update the title of the row in the notion database.',
+    description:
+      'Update the title of the row (index starts from 0) in the notion database.',
     parameters: [
       {
         name: 'index',
@@ -45,27 +46,59 @@ export const NotionTable = ({ initialTableData }: NotionTableProps) => {
       },
     ],
     handler: async ({ index, newTitle }) => {
-      console.log('index', index)
-      console.log('newTitle', newTitle)
-
       const parsedIndex = parseInt(index, 10)
       if (isNaN(parsedIndex)) throw new Error('Invalid index')
 
       const { success } = await updateNotionDBRowTitle({
-        tableRowIndex: parsedIndex,
+        tableRowId: tableData[parsedIndex].id,
         tableRowNewTitle: newTitle,
       })
 
-      if (!success) {
-        toast.error('Could not update the notion DB')
-        return
-      }
+      if (!success) return toast.error('Could not update the notion DB')
 
       toast.success('Successfully updated the notion DB')
       setTableData(prevData => {
         const updatedTableData = [...prevData]
         if (parsedIndex >= 0 && parsedIndex < updatedTableData.length) {
           updatedTableData[parsedIndex].name = newTitle
+        }
+        return updatedTableData
+      })
+    },
+  })
+
+  useCopilotAction({
+    name: 'updateRowLink',
+    description:
+      'Update the link of the row (index starts from 0) in the notion database.',
+    parameters: [
+      {
+        name: 'index',
+        description: 'Index of the row to update.',
+        required: true,
+      },
+      {
+        name: 'newLink',
+        description: 'New link to the row.',
+        required: true,
+      },
+    ],
+    handler: async ({ index, newLink }) => {
+      const parsedIndex = parseInt(index, 10)
+      if (isNaN(parsedIndex)) throw new Error('Invalid index')
+
+      const { success } = await updateNotionDBRowLink({
+        tableRowId: tableData[parsedIndex].id,
+        tableRowNewLink: newLink,
+      })
+
+      if (!success) return toast.error('Could not update the notion DB')
+
+      toast.success('Successfully updated the notion DB')
+      setTableData(prevData => {
+        const updatedTableData = [...prevData]
+        if (parsedIndex >= 0 && parsedIndex < updatedTableData.length) {
+          updatedTableData[parsedIndex].meet_link = newLink
         }
         return updatedTableData
       })
@@ -87,7 +120,7 @@ export const NotionTable = ({ initialTableData }: NotionTableProps) => {
       ) : (
         <TableBody>
           {tableData.map((dbRow, i) => (
-            <TableRow key={`${dbRow.name}-${i}`}>
+            <TableRow key={`${dbRow.name}-${dbRow.id}-${i}`}>
               <TableCell className='font-medium'>{dbRow.name}</TableCell>
               <TableCell>
                 {dbRow.meet_link ? (

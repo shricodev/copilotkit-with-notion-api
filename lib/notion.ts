@@ -28,8 +28,45 @@ export const fetchNotionDB = async (): Promise<
 }
 
 export const updateNotionDBRowTitle = async ({
-  tableRowIndex,
+  tableRowId,
   tableRowNewTitle,
+}: {
+  tableRowId: string
+  tableRowNewTitle: string
 }): Promise<{ success: boolean }> => {
-  return { success: true }
+  try {
+    await notion.pages.update({
+      page_id: tableRowId,
+      properties: {
+        name: {
+          title: [{ text: { content: tableRowNewTitle } }],
+        },
+      },
+    })
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
+}
+
+export const updateNotionDBRowLink = async ({
+  tableRowId,
+  tableRowNewLink,
+}: {
+  tableRowId: string
+  tableRowNewLink: string
+}): Promise<{ success: boolean }> => {
+  try {
+    await notion.pages.update({
+      page_id: tableRowId,
+      properties: {
+        meet_link: {
+          url: tableRowNewLink,
+        },
+      },
+    })
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
 }
