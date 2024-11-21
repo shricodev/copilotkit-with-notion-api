@@ -8,3 +8,12 @@ export type TRow = {
   meet_link: { id: string; url: string }
   dueDate?: { id: string; type: 'date'; date?: { start: string; end: string } }
 }
+
+export type TFormattedRow = {
+  name: string
+  meet_link: string
+  dueDate: {
+    start: string
+    end: string
+  }
+}

@@ -10,24 +10,66 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import Link from 'next/link'
-import { useCopilotReadable } from '@copilotkit/react-core'
+import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core'
+import { useState } from 'react'
+import { updateNotionDBRowTitle } from '@/lib/notion'
+import { toast } from 'sonner'
+import { TFormattedRow } from '@/types/notion'
 
 interface NotionTableProps {
-  tableData: {
-    name: string
-    meet_link: string
-    dueDate: {
-      start: string
-      end: string
-    }
-  }[]
+  initialTableData: TFormattedRow[]
 }
 
-export const NotionTable = ({ tableData }: NotionTableProps) => {
+export const NotionTable = ({ initialTableData }: NotionTableProps) => {
+  const [tableData, setTableData] = useState<TFormattedRow[]>(initialTableData)
+
   useCopilotReadable({
     description:
       'All the rows in our notion database which holds the information for all the meetings I need to attend.',
     value: tableData,
+  })
+
+  useCopilotAction({
+    name: 'updateRowName',
+    description: 'Update the title of the row in the notion database.',
+    parameters: [
+      {
+        name: 'index',
+        description: 'Index of the row to update.',
+        required: true,
+      },
+      {
+        name: 'newTitle',
+        description: 'New title for the row.',
+        required: true,
+      },
+    ],
+    handler: async ({ index, newTitle }) => {
+      console.log('index', index)
+      console.log('newTitle', newTitle)
+
+      const parsedIndex = parseInt(index, 10)
+      if (isNaN(parsedIndex)) throw new Error('Invalid index')
+
+      const { success } = await updateNotionDBRowTitle({
+        tableRowIndex: parsedIndex,
+        tableRowNewTitle: newTitle,
+      })
+
+      if (!success) {
+        toast.error('Could not update the notion DB')
+        return
+      }
+
+      toast.success('Successfully updated the notion DB')
+      setTableData(prevData => {
+        const updatedTableData = [...prevData]
+        if (parsedIndex >= 0 && parsedIndex < updatedTableData.length) {
+          updatedTableData[parsedIndex].name = newTitle
+        }
+        return updatedTableData
+      })
+    },
   })
 
   return (
@@ -40,7 +82,7 @@ export const NotionTable = ({ tableData }: NotionTableProps) => {
           <TableHead className='text-right'>Due Date</TableHead>
         </TableRow>
       </TableHeader>
-      {tableData.length === 0 ? (
+      {initialTableData.length === 0 ? (
         <p className='text-center text-zinc-500'>No data found.</p>
       ) : (
         <TableBody>

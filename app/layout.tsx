@@ -5,6 +5,7 @@ import localFont from 'next/font/local'
 import { COPILOTKIT_API_ENDPOINT } from '@/lib/constants'
 import './globals.css'
 import '@copilotkit/react-ui/styles.css'
+import { Toaster } from '@/components/ui/sonner'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -36,7 +37,8 @@ export default function RootLayout({
           runtimeUrl={COPILOTKIT_API_ENDPOINT}
           //publicApiKey={env.COPILOTKIT_PUBLIC_KEY}
         >
-          {children}
+          <main>{children}</main>
+          <Toaster />
           <CopilotPopup />
         </CopilotKit>
       </body>

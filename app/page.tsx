@@ -25,7 +25,7 @@ export default async function Home() {
   return (
     <div className='mt-8 flex justify-center'>
       <div className='w-full max-w-4xl'>
-        <NotionTable tableData={formattedDBRows} />
+        <NotionTable initialTableData={formattedDBRows} />
       </div>
     </div>
   )

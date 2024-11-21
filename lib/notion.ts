@@ -26,3 +26,10 @@ export const fetchNotionDB = async (): Promise<
     } as TErrResponse
   }
 }
+
+export const updateNotionDBRowTitle = async ({
+  tableRowIndex,
+  tableRowNewTitle,
+}): Promise<{ success: boolean }> => {
+  return { success: true }
+}
