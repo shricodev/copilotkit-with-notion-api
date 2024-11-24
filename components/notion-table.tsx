@@ -9,12 +9,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import Link from 'next/link'
-import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core'
-import { useState } from 'react'
-import { updateNotionDBRowLink, updateNotionDBRowTitle } from '@/lib/notion'
-import { toast } from 'sonner'
+import { updateNotionDBRowLink, updateNotionDBRowTitle } from '@/lib/actions'
 import { TRowDetails } from '@/types/notion'
+import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core'
+import Link from 'next/link'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface NotionTableProps {
   initialTableData: TRowDetails[]
@@ -98,7 +98,7 @@ export const NotionTable = ({ initialTableData }: NotionTableProps) => {
       setTableData(prevData => {
         const updatedTableData = [...prevData]
         if (parsedIndex >= 0 && parsedIndex < updatedTableData.length) {
-          updatedTableData[parsedIndex].meet_link = newLink
+          updatedTableData[parsedIndex].link = newLink
         }
         return updatedTableData
       })
@@ -111,7 +111,7 @@ export const NotionTable = ({ initialTableData }: NotionTableProps) => {
       <TableHeader className='bg-zinc-100'>
         <TableRow>
           <TableHead>Name</TableHead>
-          <TableHead>Meet Link</TableHead>
+          <TableHead>Link</TableHead>
           <TableHead className='text-right'>Due Date</TableHead>
         </TableRow>
       </TableHeader>
@@ -121,24 +121,34 @@ export const NotionTable = ({ initialTableData }: NotionTableProps) => {
         <TableBody>
           {tableData.map((dbRow, i) => (
             <TableRow key={`${dbRow.name}-${dbRow.id}-${i}`}>
-              <TableCell className='font-medium'>{dbRow.name}</TableCell>
+              <TableCell className='font-medium'>
+                {dbRow.name ? (
+                  <span>{dbRow.name}</span>
+                ) : (
+                  <span className='text-zinc-500'>Unnamed</span>
+                )}
+              </TableCell>
               <TableCell>
-                {dbRow.meet_link ? (
+                {dbRow.link ? (
                   <Link
-                    href={dbRow.meet_link}
-                    aria-label={`Meet link for ${dbRow.name}`}
+                    href={dbRow.link}
+                    aria-label={`Link for ${dbRow.name || 'Unnamed'}`}
                     target='_blank'
                     className='underline underline-offset-4'
                   >
-                    {dbRow.meet_link}
+                    {dbRow.link}
                   </Link>
                 ) : (
-                  <span className='text-gray-500'>No Link</span>
+                  <span className='text-zinc-500'>No Link</span>
                 )}
               </TableCell>
               <TableCell className='text-right'>
-                {dbRow.dueDate.start && `${dbRow.dueDate.start}`}
-                {dbRow.dueDate.end && ` - ${dbRow.dueDate.end}`}
+                {dbRow.dueDate.start ? (
+                  <span>{dbRow.dueDate.start}</span>
+                ) : (
+                  <span className='text-zinc-500'>No Due Date</span>
+                )}
+                {dbRow.dueDate.end ? ` - ${dbRow.dueDate.end}` : null}
               </TableCell>
             </TableRow>
           ))}

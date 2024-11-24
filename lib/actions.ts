@@ -1,16 +1,20 @@
 'use server'
 
-import { Client } from '@notionhq/client'
+import {
+  NOTION_DB_PROPERTY_LINK,
+  NOTION_DB_PROPERTY_NAME,
+} from '@/lib/constants'
 import { env } from '@/lib/env'
+import { TResponse } from '@/types/notion'
+import { Client } from '@notionhq/client'
 import { QueryDatabaseResponse } from '@notionhq/client/build/src/api-endpoints'
-import { TErrResponse } from '@/types/notion'
 
 const notion = new Client({
   auth: env.NOTION_SECRET_API_KEY,
 })
 
 export const fetchNotionDB = async (): Promise<
-  QueryDatabaseResponse | TErrResponse
+  QueryDatabaseResponse | TResponse
 > => {
   try {
     const dbQuery = await notion.databases.query({
@@ -18,12 +22,11 @@ export const fetchNotionDB = async (): Promise<
     })
 
     return dbQuery
-  } catch {
-    console.error('DEBUG: Error in the function: `fetchNotionDB`')
+  } catch (error) {
     return {
       success: false,
-      error: new Error('Error fetching Notion DB'),
-    } as TErrResponse
+      error: error as Error,
+    } as TResponse
   }
 }
 
@@ -33,19 +36,19 @@ export const updateNotionDBRowTitle = async ({
 }: {
   tableRowId: string
   tableRowNewTitle: string
-}): Promise<{ success: boolean }> => {
+}): Promise<TResponse> => {
   try {
     await notion.pages.update({
       page_id: tableRowId,
       properties: {
-        name: {
+        [NOTION_DB_PROPERTY_NAME]: {
           title: [{ text: { content: tableRowNewTitle } }],
         },
       },
     })
-    return { success: true }
-  } catch {
-    return { success: false }
+    return { success: true, error: null } as TResponse
+  } catch (error) {
+    return { success: false, error: error as Error } as TResponse
   }
 }
 
@@ -55,18 +58,18 @@ export const updateNotionDBRowLink = async ({
 }: {
   tableRowId: string
   tableRowNewLink: string
-}): Promise<{ success: boolean }> => {
+}): Promise<TResponse> => {
   try {
     await notion.pages.update({
       page_id: tableRowId,
       properties: {
-        meet_link: {
+        [NOTION_DB_PROPERTY_LINK]: {
           url: tableRowNewLink,
         },
       },
     })
-    return { success: true }
-  } catch {
-    return { success: false }
+    return { success: true, error: null } as TResponse
+  } catch (error) {
+    return { success: false, error: error as Error } as TResponse
   }
 }

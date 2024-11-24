@@ -10,8 +10,6 @@ export const env = createEnv({
     NOTION_SECRET_API_KEY: z.string().min(1),
     NOTION_DB_ID: z.string().min(1),
     OPENAI_API_KEY: z.string().min(1),
-
-    COPILOTKIT_PUBLIC_KEY: z.string().min(1),
   },
   /*
    * Environment variables available on the client (and server).
@@ -29,7 +27,5 @@ export const env = createEnv({
     NOTION_SECRET_API_KEY: process.env.NOTION_SECRET_API_KEY,
     NOTION_DB_ID: process.env.NOTION_DB_ID,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-
-    COPILOTKIT_PUBLIC_KEY: process.env.COPILOTKIT_PUBLIC_KEY,
   },
 })
